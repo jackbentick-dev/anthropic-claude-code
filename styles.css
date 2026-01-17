@@ -1,0 +1,613 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #1a5f2a;
+    --primary-dark: #0d3d16;
+    --secondary-color: #2c7a3d;
+    --accent-color: #f0a500;
+    --betfair-color: #ffb80c;
+    --betfair-bg: #1e1e1e;
+    --sportsbet-color: #00a651;
+    --sportsbet-bg: #004d25;
+    --background: #f5f7fa;
+    --card-bg: #ffffff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a68;
+    --text-muted: #8a8aa3;
+    --border-color: #e1e5eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 24px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.header .subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 16px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.last-updated {
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+.update-label {
+    opacity: 0.8;
+    margin-right: 8px;
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    color: var(--primary-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+.refresh-icon {
+    transition: transform 0.3s ease;
+}
+
+.refresh-btn.loading .refresh-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.auto-refresh label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.auto-refresh input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Filters */
+.filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.filter-group select {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 95, 42, 0.1);
+}
+
+/* Races Container */
+.races-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Loading State */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+/* Race Card */
+.race-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.race-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.race-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8f9fa, #eef1f5);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.race-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.race-venue {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.race-number {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.race-distance {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.race-time {
+    text-align: right;
+}
+
+.race-time .time {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.race-time .countdown {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.race-time .countdown.soon {
+    background: var(--warning);
+    color: white;
+}
+
+.race-time .countdown.imminent {
+    background: var(--danger);
+    color: white;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.race-time .countdown.normal {
+    background: var(--border-color);
+    color: var(--text-secondary);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Runners Table */
+.runners-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.runners-table thead {
+    background: #f8f9fa;
+}
+
+.runners-table th {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.runners-table th.odds-header {
+    text-align: center;
+}
+
+.runners-table th.betfair-header {
+    background: var(--betfair-bg);
+    color: var(--betfair-color);
+}
+
+.runners-table th.sportsbet-header {
+    background: var(--sportsbet-bg);
+    color: white;
+}
+
+.runners-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.runners-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.runners-table tbody tr.scratched {
+    opacity: 0.5;
+    background: #fef2f2;
+}
+
+.runners-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.runners-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Runner Info */
+.runner-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.runner-name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.runner-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.runner-jockey {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.runner-trainer {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.scratched-label {
+    display: inline-block;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+/* Odds Cells */
+.odds-cell {
+    text-align: center;
+    min-width: 100px;
+}
+
+.odds-value {
+    font-size: 18px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 70px;
+    transition: all 0.3s ease;
+}
+
+.odds-cell.betfair .odds-value {
+    background: var(--betfair-bg);
+    color: var(--betfair-color);
+}
+
+.odds-cell.sportsbet .odds-value {
+    background: var(--sportsbet-bg);
+    color: white;
+}
+
+.odds-value.odds-up {
+    animation: flashGreen 0.5s ease;
+}
+
+.odds-value.odds-down {
+    animation: flashRed 0.5s ease;
+}
+
+@keyframes flashGreen {
+    0%, 100% { background: inherit; }
+    50% { background: var(--success); color: white; }
+}
+
+@keyframes flashRed {
+    0%, 100% { background: inherit; }
+    50% { background: var(--danger); color: white; }
+}
+
+.odds-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.odds-cell.betfair .odds-meta {
+    color: #888;
+}
+
+.odds-cell.sportsbet .odds-meta {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.odds-na {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Best Odds Indicator */
+.best-odds .odds-value {
+    position: relative;
+}
+
+.best-odds .odds-value::after {
+    content: 'BEST';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--success);
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+/* Footer */
+.footer {
+    margin-top: 32px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.footer .disclaimer {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard {
+        padding: 16px;
+    }
+
+    .header {
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .runners-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-group select {
+        flex: 1;
+    }
+
+    .race-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .race-time {
+        text-align: left;
+    }
+
+    .runners-table th,
+    .runners-table td {
+        padding: 10px 12px;
+    }
+
+    .odds-value {
+        font-size: 16px;
+        min-width: 60px;
+    }
+}
+
+/* Status Indicators */
+.status-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--success);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-live::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Connection Status */
+.connection-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.connection-status.connected {
+    background: var(--success);
+    color: white;
+}
+
+.connection-status.disconnected {
+    background: var(--danger);
+    color: white;
+}
+
+.connection-status.reconnecting {
+    background: var(--warning);
+    color: white;
+}
