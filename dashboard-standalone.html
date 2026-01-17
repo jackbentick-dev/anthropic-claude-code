@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Australian Horse Racing Odds Dashboard</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #1a5f2a;
+    --primary-dark: #0d3d16;
+    --secondary-color: #2c7a3d;
+    --accent-color: #f0a500;
+    --betfair-color: #ffb80c;
+    --betfair-bg: #1e1e1e;
+    --sportsbet-color: #00a651;
+    --sportsbet-bg: #004d25;
+    --background: #f5f7fa;
+    --card-bg: #ffffff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a68;
+    --text-muted: #8a8aa3;
+    --border-color: #e1e5eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 24px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.header .subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 16px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.last-updated {
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+.update-label {
+    opacity: 0.8;
+    margin-right: 8px;
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    color: var(--primary-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+.refresh-icon {
+    transition: transform 0.3s ease;
+}
+
+.refresh-btn.loading .refresh-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.auto-refresh label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.auto-refresh input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.filter-group select {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 95, 42, 0.1);
+}
+
+.races-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+.race-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.race-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.race-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8f9fa, #eef1f5);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.race-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.race-venue {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.race-number {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.race-distance {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.race-time {
+    text-align: right;
+}
+
+.race-time .time {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.race-time .countdown {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.race-time .countdown.soon {
+    background: var(--warning);
+    color: white;
+}
+
+.race-time .countdown.imminent {
+    background: var(--danger);
+    color: white;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.race-time .countdown.normal {
+    background: var(--border-color);
+    color: var(--text-secondary);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.runners-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.runners-table thead {
+    background: #f8f9fa;
+}
+
+.runners-table th {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.runners-table th.odds-header {
+    text-align: center;
+}
+
+.runners-table th.betfair-header {
+    background: var(--betfair-bg);
+    color: var(--betfair-color);
+}
+
+.runners-table th.sportsbet-header {
+    background: var(--sportsbet-bg);
+    color: white;
+}
+
+.runners-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.runners-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.runners-table tbody tr.scratched {
+    opacity: 0.5;
+    background: #fef2f2;
+}
+
+.runners-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.runners-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.runner-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.runner-name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.runner-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.runner-jockey {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.runner-trainer {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.scratched-label {
+    display: inline-block;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.odds-cell {
+    text-align: center;
+    min-width: 100px;
+}
+
+.odds-value {
+    font-size: 18px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 70px;
+    transition: all 0.3s ease;
+}
+
+.odds-cell.betfair .odds-value {
+    background: var(--betfair-bg);
+    color: var(--betfair-color);
+}
+
+.odds-cell.sportsbet .odds-value {
+    background: var(--sportsbet-bg);
+    color: white;
+}
+
+.odds-value.odds-up {
+    animation: flashGreen 0.5s ease;
+}
+
+.odds-value.odds-down {
+    animation: flashRed 0.5s ease;
+}
+
+@keyframes flashGreen {
+    0%, 100% { background: inherit; }
+    50% { background: var(--success); color: white; }
+}
+
+@keyframes flashRed {
+    0%, 100% { background: inherit; }
+    50% { background: var(--danger); color: white; }
+}
+
+.odds-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.odds-cell.betfair .odds-meta {
+    color: #888;
+}
+
+.odds-cell.sportsbet .odds-meta {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.odds-na {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.best-odds .odds-value {
+    position: relative;
+}
+
+.best-odds .odds-value::after {
+    content: 'BEST';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--success);
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+.footer {
+    margin-top: 32px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.footer .disclaimer {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+@media (max-width: 1024px) {
+    .dashboard {
+        padding: 16px;
+    }
+    .header {
+        padding: 20px;
+    }
+    .header h1 {
+        font-size: 24px;
+    }
+    .runners-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .filters {
+        flex-direction: column;
+    }
+    .filter-group {
+        width: 100%;
+    }
+    .filter-group select {
+        flex: 1;
+    }
+    .race-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    .race-time {
+        text-align: left;
+    }
+    .runners-table th,
+    .runners-table td {
+        padding: 10px 12px;
+    }
+    .odds-value {
+        font-size: 16px;
+        min-width: 60px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <h1>Australian Horse Racing</h1>
+            <p class="subtitle">Live Odds Dashboard</p>
+            <div class="header-controls">
+                <div class="last-updated">
+                    <span class="update-label">Last Updated:</span>
+                    <span id="lastUpdated">--:--:--</span>
+                </div>
+                <button id="refreshBtn" class="refresh-btn">
+                    <svg class="refresh-icon" viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    Refresh Odds
+                </button>
+                <div class="auto-refresh">
+                    <label>
+                        <input type="checkbox" id="autoRefresh" checked>
+                        Auto-refresh (30s)
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="venueFilter">Venue:</label>
+                    <select id="venueFilter">
+                        <option value="all">All Venues</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="timeFilter">Time Range:</label>
+                    <select id="timeFilter">
+                        <option value="all">All Races</option>
+                        <option value="60">Next Hour</option>
+                        <option value="180">Next 3 Hours</option>
+                        <option value="today">Today Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="racesContainer" class="races-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading races...</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Data sources: Betfair Exchange (Lay Odds) | Sportsbet (Fixed Odds)</p>
+            <p class="disclaimer">For informational purposes only. Please gamble responsibly.</p>
+        </footer>
+    </div>
+
+    <script>
+// Data Service
+const DataService = (() => {
+    const VENUES = [
+        { name: 'Flemington', state: 'VIC', code: 'FLE' },
+        { name: 'Randwick', state: 'NSW', code: 'RAN' },
+        { name: 'Eagle Farm', state: 'QLD', code: 'EAG' },
+        { name: 'Morphettville', state: 'SA', code: 'MOR' },
+        { name: 'Ascot', state: 'WA', code: 'ASC' },
+        { name: 'Moonee Valley', state: 'VIC', code: 'MOO' },
+        { name: 'Rosehill', state: 'NSW', code: 'ROS' },
+        { name: 'Doomben', state: 'QLD', code: 'DOO' },
+        { name: 'Caulfield', state: 'VIC', code: 'CAU' },
+        { name: 'Canterbury', state: 'NSW', code: 'CAN' }
+    ];
+
+    const HORSE_NAMES = [
+        'Nature Strip', 'Verry Elleegant', 'Incentivise', 'Zaaki',
+        'Anamoe', 'I Am Invincible', 'Home Affairs', 'Profondo',
+        'Bella Nipotina', 'Masked Crusader', 'Mr Brightside', 'Coolangatta',
+        'Golden Slipper', 'Winx Legacy', 'Black Caviar II', 'Phar Lap Dream',
+        'Melbourne Cup', 'Sydney Flash', 'Brisbane Storm', 'Perth Thunder',
+        'Adelaide Spirit', 'Canberra Star', 'Outback Runner', 'Desert Wind',
+        'Ocean Breeze', 'Mountain Peak', 'Valley Champion', 'River Dance',
+        'Golden Dawn', 'Silver Streak', 'Bronze Medal', 'Diamond Rush',
+        'Thunder Bolt', 'Lightning Fast', 'Storm Chaser', 'Wind Runner'
+    ];
+
+    const JOCKEYS = [
+        'J. McDonald', 'D. Oliver', 'W. Pike', 'C. Williams', 'H. Bowman',
+        'K. McEvoy', 'M. Zahra', 'B. Melham', 'D. Lane', 'J. Kah',
+        'R. Bayliss', 'T. Berry', 'N. Rawiller', 'B. Avdulla'
+    ];
+
+    const TRAINERS = [
+        'C. Waller', 'G. Waterhouse', 'P. Payne', 'M. Price', 'J. Cummings',
+        'A. Cummings', 'C. Maher', 'D. Eustace', 'L. Freedman'
+    ];
+
+    const RACE_TYPES = [
+        'Maiden Plate', 'Class 1 Handicap', 'Class 2 Handicap',
+        'Benchmark 58', 'Benchmark 72', 'Open Handicap', 'Group 3', 'Group 1'
+    ];
+
+    const DISTANCES = [1000, 1200, 1400, 1600, 1800, 2000, 2400];
+
+    let currentRaces = [];
+    let previousOdds = {};
+
+    function randomFrom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateBetfairLayOdds(baseOdds) {
+        const spread = 1 + (Math.random() * 0.05);
+        return Math.round(baseOdds * spread * 100) / 100;
+    }
+
+    function generateBetfairAvailable() {
+        return randomFrom([50, 100, 200, 500, 1000, 2000, 5000]);
+    }
+
+    function simulateOddsMovement(currentOdds, volatility = 0.03) {
+        const change = (Math.random() - 0.5) * 2 * volatility * currentOdds;
+        let newOdds = currentOdds + change;
+        newOdds = Math.max(1.01, Math.min(newOdds, 1000));
+        return Math.round(newOdds * 100) / 100;
+    }
+
+    function generateRaceTimes(numRaces, startHour) {
+        const times = [];
+        const now = new Date();
+        let currentHour = startHour;
+        let currentMinute = Math.floor(Math.random() * 2) * 30;
+
+        for (let i = 0; i < numRaces; i++) {
+            const raceTime = new Date(now);
+            raceTime.setHours(currentHour, currentMinute, 0, 0);
+            times.push(raceTime);
+            currentMinute += 25 + Math.floor(Math.random() * 10);
+            if (currentMinute >= 60) {
+                currentMinute -= 60;
+                currentHour++;
+            }
+        }
+        return times;
+    }
+
+    function generateRunners(numRunners, raceId) {
+        const runners = [];
+        const usedNames = new Set();
+        const usedJockeys = new Set();
+        const favoriteOdds = 2 + Math.random() * 3;
+
+        for (let i = 0; i < numRunners; i++) {
+            let horseName;
+            do { horseName = randomFrom(HORSE_NAMES); } while (usedNames.has(horseName));
+            usedNames.add(horseName);
+
+            let jockey;
+            do { jockey = randomFrom(JOCKEYS); } while (usedJockeys.has(jockey));
+            usedJockeys.add(jockey);
+
+            let baseOdds;
+            if (i === 0) baseOdds = favoriteOdds;
+            else if (i === 1) baseOdds = favoriteOdds * (1.2 + Math.random() * 0.5);
+            else if (i === 2) baseOdds = favoriteOdds * (1.8 + Math.random() * 0.7);
+            else baseOdds = favoriteOdds * (2 + Math.random() * i);
+
+            const isScratched = Math.random() < 0.05;
+
+            runners.push({
+                id: `${raceId}-${i + 1}`,
+                number: i + 1,
+                name: horseName,
+                jockey: jockey,
+                trainer: randomFrom(TRAINERS),
+                barrier: i + 1,
+                weight: 54 + Math.floor(Math.random() * 8),
+                isScratched: isScratched,
+                odds: {
+                    betfair: {
+                        lay: isScratched ? null : generateBetfairLayOdds(baseOdds),
+                        available: isScratched ? null : generateBetfairAvailable()
+                    },
+                    sportsbet: {
+                        fixed: isScratched ? null : Math.round(baseOdds * 100) / 100
+                    }
+                }
+            });
+        }
+
+        runners.sort((a, b) => {
+            if (a.isScratched && !b.isScratched) return 1;
+            if (!a.isScratched && b.isScratched) return -1;
+            return (a.odds.sportsbet.fixed || 999) - (b.odds.sportsbet.fixed || 999);
+        });
+
+        return runners;
+    }
+
+    function generateRaceMeetings() {
+        const meetings = [];
+        const usedVenues = new Set();
+        const numMeetings = 3 + Math.floor(Math.random() * 2);
+
+        for (let m = 0; m < numMeetings; m++) {
+            let venue;
+            do { venue = randomFrom(VENUES); } while (usedVenues.has(venue.name));
+            usedVenues.add(venue.name);
+
+            const numRaces = 7 + Math.floor(Math.random() * 3);
+            const startHour = 11 + m;
+            const raceTimes = generateRaceTimes(numRaces, startHour);
+
+            const races = [];
+            for (let r = 0; r < numRaces; r++) {
+                races.push({
+                    id: `${venue.code}-R${r + 1}`,
+                    raceNumber: r + 1,
+                    venue: venue,
+                    raceType: randomFrom(RACE_TYPES),
+                    distance: randomFrom(DISTANCES),
+                    time: raceTimes[r],
+                    runners: generateRunners(8 + Math.floor(Math.random() * 6), `${venue.code}-R${r + 1}`),
+                    status: 'upcoming'
+                });
+            }
+            meetings.push({ venue, races });
+        }
+        return meetings;
+    }
+
+    function flattenAndSortRaces(meetings) {
+        const allRaces = [];
+        meetings.forEach(m => m.races.forEach(r => allRaces.push(r)));
+        allRaces.sort((a, b) => a.time - b.time);
+        return allRaces;
+    }
+
+    function updateOddsWithMovement(races) {
+        races.forEach(race => {
+            race.runners.forEach(runner => {
+                if (runner.isScratched) return;
+                const prev = previousOdds[runner.id];
+
+                if (runner.odds.betfair.lay) {
+                    const newLay = simulateOddsMovement(runner.odds.betfair.lay);
+                    runner.odds.betfair.layChange = prev ? (newLay > prev.betfairLay ? 'up' : newLay < prev.betfairLay ? 'down' : null) : null;
+                    runner.odds.betfair.lay = newLay;
+                    runner.odds.betfair.available = generateBetfairAvailable();
+                }
+
+                if (runner.odds.sportsbet.fixed && Math.random() < 0.3) {
+                    const newFixed = simulateOddsMovement(runner.odds.sportsbet.fixed, 0.02);
+                    runner.odds.sportsbet.fixedChange = prev ? (newFixed > prev.sportsbetFixed ? 'up' : newFixed < prev.sportsbetFixed ? 'down' : null) : null;
+                    runner.odds.sportsbet.fixed = newFixed;
+                } else if (runner.odds.sportsbet.fixed) {
+                    runner.odds.sportsbet.fixedChange = null;
+                }
+
+                previousOdds[runner.id] = { betfairLay: runner.odds.betfair.lay, sportsbetFixed: runner.odds.sportsbet.fixed };
+            });
+        });
+        return races;
+    }
+
+    function filterAndUpdateRaces(races) {
+        const now = new Date();
+        return races.filter(race => {
+            const timeDiff = race.time - now;
+            if (timeDiff < -5 * 60 * 1000) return false;
+            if (timeDiff < 0) race.status = 'running';
+            else if (timeDiff < 2 * 60 * 1000) race.status = 'imminent';
+            else if (timeDiff < 15 * 60 * 1000) race.status = 'soon';
+            else race.status = 'upcoming';
+            return true;
+        });
+    }
+
+    function init() {
+        currentRaces = flattenAndSortRaces(generateRaceMeetings());
+        currentRaces.forEach(race => {
+            race.runners.forEach(runner => {
+                if (!runner.isScratched) {
+                    previousOdds[runner.id] = { betfairLay: runner.odds.betfair.lay, sportsbetFixed: runner.odds.sportsbet.fixed };
+                }
+            });
+        });
+        return currentRaces;
+    }
+
+    async function fetchRaces() {
+        await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 500));
+        if (currentRaces.length === 0) init();
+        currentRaces = updateOddsWithMovement(currentRaces);
+        currentRaces = filterAndUpdateRaces(currentRaces);
+        if (currentRaces.length === 0) init();
+        return [...currentRaces];
+    }
+
+    function getVenues() {
+        const venueSet = new Set();
+        const venues = [];
+        currentRaces.forEach(race => {
+            if (!venueSet.has(race.venue.name)) {
+                venueSet.add(race.venue.name);
+                venues.push(race.venue);
+            }
+        });
+        return venues.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return { init, fetchRaces, getVenues };
+})();
+
+// Main App
+const App = (() => {
+    let racesContainer, lastUpdatedEl, refreshBtn, autoRefreshCheckbox, venueFilter, timeFilter;
+    let races = [];
+    let autoRefreshInterval = null;
+    let isLoading = false;
+    const AUTO_REFRESH_MS = 30000;
+
+    function formatTime(date) {
+        return date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    function formatCountdown(date) {
+        const diff = date - new Date();
+        if (diff < 0) return 'Started';
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        if (minutes < 1) return `${seconds}s`;
+        if (minutes < 60) return `${minutes}m ${seconds}s`;
+        return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+    }
+
+    function getCountdownClass(date) {
+        const diff = date - new Date();
+        if (diff < 2 * 60 * 1000) return 'imminent';
+        if (diff < 15 * 60 * 1000) return 'soon';
+        return 'normal';
+    }
+
+    function formatOdds(value) { return value == null ? '-' : value.toFixed(2); }
+    function formatCurrency(value) { return value == null ? '' : `$${value.toLocaleString()}`; }
+
+    function getBestOdds(runner) {
+        const bf = runner.odds.betfair.lay, sb = runner.odds.sportsbet.fixed;
+        if (!bf && !sb) return null;
+        if (!bf) return 'sportsbet';
+        if (!sb) return 'betfair';
+        return sb < bf ? 'sportsbet' : null;
+    }
+
+    function renderRaceCard(race) {
+        const bestOddsMap = {};
+        race.runners.forEach(r => bestOddsMap[r.id] = getBestOdds(r));
+
+        return `
+            <div class="race-card" data-race-id="${race.id}">
+                <div class="race-header">
+                    <div class="race-info">
+                        <div class="race-venue">${race.venue.name} (${race.venue.state})</div>
+                        <div class="race-number">Race ${race.raceNumber} - ${race.raceType}</div>
+                        <div class="race-distance">${race.distance}m</div>
+                    </div>
+                    <div class="race-time">
+                        <div class="time">${formatTime(race.time)}</div>
+                        <div class="countdown ${getCountdownClass(race.time)}">${formatCountdown(race.time)}</div>
+                    </div>
+                </div>
+                <table class="runners-table">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">#</th>
+                            <th>Runner</th>
+                            <th style="width:60px">Bar</th>
+                            <th style="width:60px">Wgt</th>
+                            <th class="odds-header betfair-header" style="width:130px">Betfair Lay</th>
+                            <th class="odds-header sportsbet-header" style="width:100px">Sportsbet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${race.runners.map(r => renderRunner(r, bestOddsMap[r.id])).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    function renderRunner(runner, bestOdds) {
+        const sc = runner.isScratched ? 'scratched' : '';
+        const bfBest = bestOdds === 'betfair' ? 'best-odds' : '';
+        const sbBest = bestOdds === 'sportsbet' ? 'best-odds' : '';
+        const bfChange = runner.odds.betfair.layChange || '';
+        const sbChange = runner.odds.sportsbet.fixedChange || '';
+
+        return `
+            <tr class="${sc}" data-runner-id="${runner.id}">
+                <td><span class="runner-number">${runner.number}</span></td>
+                <td>
+                    <div class="runner-name-cell">
+                        <span class="runner-name">${runner.name}${runner.isScratched ? '<span class="scratched-label">SCR</span>' : ''}</span>
+                        <span class="runner-jockey">J: ${runner.jockey}</span>
+                        <span class="runner-trainer">T: ${runner.trainer}</span>
+                    </div>
+                </td>
+                <td>${runner.barrier}</td>
+                <td>${runner.weight}kg</td>
+                <td class="odds-cell betfair ${bfBest}">
+                    ${runner.isScratched ? '<span class="odds-na">-</span>' : `<span class="odds-value odds-${bfChange}">${formatOdds(runner.odds.betfair.lay)}</span><div class="odds-meta">${formatCurrency(runner.odds.betfair.available)} avail</div>`}
+                </td>
+                <td class="odds-cell sportsbet ${sbBest}">
+                    ${runner.isScratched ? '<span class="odds-na">-</span>' : `<span class="odds-value odds-${sbChange}">${formatOdds(runner.odds.sportsbet.fixed)}</span>`}
+                </td>
+            </tr>`;
+    }
+
+    function render() {
+        if (isLoading && races.length === 0) {
+            racesContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading races...</p></div>';
+            return;
+        }
+        const filtered = filterRaces(races);
+        if (filtered.length === 0) {
+            racesContainer.innerHTML = '<div class="empty-state"><h3>No Upcoming Races</h3><p>Try adjusting your filters.</p></div>';
+            return;
+        }
+        racesContainer.innerHTML = filtered.map(r => renderRaceCard(r)).join('');
+    }
+
+    function filterRaces(data) {
+        const venue = venueFilter.value;
+        const timeRange = timeFilter.value;
+        const now = new Date();
+        return data.filter(race => {
+            if (venue !== 'all' && race.venue.name !== venue) return false;
+            if (timeRange !== 'all') {
+                const diff = (race.time - now) / 60000;
+                if (timeRange === 'today') {
+                    if (race.time.toDateString() !== now.toDateString()) return false;
+                } else if (diff > parseInt(timeRange) || diff < -5) return false;
+            }
+            return true;
+        });
+    }
+
+    function updateVenueFilter() {
+        const venues = DataService.getVenues();
+        const current = venueFilter.value;
+        venueFilter.innerHTML = '<option value="all">All Venues</option>';
+        venues.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = `${v.name} (${v.state})`;
+            venueFilter.appendChild(opt);
+        });
+        if (venues.some(v => v.name === current)) venueFilter.value = current;
+    }
+
+    function updateCountdowns() {
+        document.querySelectorAll('.race-card').forEach(card => {
+            const race = races.find(r => r.id === card.dataset.raceId);
+            if (race) {
+                const el = card.querySelector('.countdown');
+                if (el) {
+                    el.textContent = formatCountdown(race.time);
+                    el.className = `countdown ${getCountdownClass(race.time)}`;
+                }
+            }
+        });
+    }
+
+    async function refreshRaces() {
+        if (isLoading) return;
+        isLoading = true;
+        refreshBtn.classList.add('loading');
+        try {
+            races = await DataService.fetchRaces();
+            updateVenueFilter();
+            render();
+            lastUpdatedEl.textContent = formatTime(new Date());
+        } catch (e) { console.error(e); }
+        finally { isLoading = false; refreshBtn.classList.remove('loading'); }
+    }
+
+    function startAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        autoRefreshInterval = setInterval(refreshRaces, AUTO_REFRESH_MS);
+        setInterval(updateCountdowns, 1000);
+    }
+
+    function init() {
+        racesContainer = document.getElementById('racesContainer');
+        lastUpdatedEl = document.getElementById('lastUpdated');
+        refreshBtn = document.getElementById('refreshBtn');
+        autoRefreshCheckbox = document.getElementById('autoRefresh');
+        venueFilter = document.getElementById('venueFilter');
+        timeFilter = document.getElementById('timeFilter');
+
+        refreshBtn.addEventListener('click', refreshRaces);
+        autoRefreshCheckbox.addEventListener('change', e => e.target.checked ? startAutoRefresh() : clearInterval(autoRefreshInterval));
+        venueFilter.addEventListener('change', render);
+        timeFilter.addEventListener('change', render);
+
+        refreshRaces();
+        if (autoRefreshCheckbox.checked) startAutoRefresh();
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+
+    return { refresh: refreshRaces };
+})();
+    </script>
+</body>
+</html>
